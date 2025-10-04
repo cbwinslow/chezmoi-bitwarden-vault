@@ -1,0 +1,7 @@
+{{- \$openai_key := (bitwarden "OpenAI API Key" "password") -}}
+{{- \$anthropic_key := (bitwarden "Anthropic API Key" "password") -}}
+
+[api_keys]
+openai = "{{ \$openai_key }}"
+anthropic = "{{ \$anthropic_key }}"
+

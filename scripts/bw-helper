@@ -1,0 +1,15 @@
+#!/bin/bash
+# Bitwarden helper script for retrieving secrets securely
+
+# Initialize Bitwarden if needed
+if [ -z "$BW_SESSION" ]; then
+    if [ -f "$HOME/.bw_session_token" ]; then
+        export BW_SESSION=$(cat "$HOME/.bw_session_token")
+    else
+        echo "Error: Bitwarden session not found. Please authenticate first."
+        exit 1
+    fi
+fi
+
+# Execute the Bitwarden command with the session
+bw "$@" --session "$BW_SESSION"

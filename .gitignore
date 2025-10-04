@@ -1,0 +1,7 @@
+*.session
+.bw_session
+.bw_session_token
+*.token
+config_private*
+.env
+.secret*

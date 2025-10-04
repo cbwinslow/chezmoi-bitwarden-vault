@@ -1,0 +1,17 @@
+#!/bin/bash
+# Bitwarden template helper for chezmoi
+
+if [ -f "$HOME/.bw_session" ]; then
+    export BW_SESSION=$(cat "$HOME/.bw_session")
+fi
+
+if [ $# -eq 1 ]; then
+    # If only item name provided, try to get the password field
+    bw get item "$1" --session "$BW_SESSION" 2>/dev/null | jq -r '.login.password // .notes'
+elif [ $# -eq 2 ]; then
+    # If item name and field provided
+    bw get item "$1" --session "$BW_SESSION" 2>/dev/null | jq -r ".fields[] | select(.name == \"$2\") | .value"
+else
+    echo "Usage: $0 item_name [field_name]"
+    exit 1
+fi
