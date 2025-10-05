@@ -18,6 +18,8 @@ This project provides a secure system for managing secrets in your dotfiles and 
 - Session-based authentication with Bitwarden
 - Helper scripts for common operations
 - Integration with existing Chezmoi workflows
+- **NEW**: Automated scanning and organization of API keys in Bitwarden
+- **NEW**: Generation of standardized Chezmoi templates
 
 ## Prerequisites
 
@@ -25,6 +27,7 @@ This project provides a secure system for managing secrets in your dotfiles and 
 - Chezmoi
 - Vault (optional)
 - Git
+- jq (for JSON processing)
 
 ## Installation
 
@@ -36,6 +39,7 @@ This project provides a secure system for managing secrets in your dotfiles and 
 2. Make the helper scripts executable:
    ```bash
    chmod +x scripts/*.sh
+   chmod +x tools/*.sh
    ```
 
 3. Add the scripts directory to your PATH or copy scripts to `~/.local/bin/`
@@ -57,7 +61,20 @@ bw login
 export BW_SESSION=$(bw unlock --raw)
 ```
 
-### 3. Using in Chezmoi Templates
+### 3. Automated API Key Organization
+
+Scan your Bitwarden vault and generate standardized templates:
+```bash
+./tools/organize-bw-items.sh
+```
+
+This will:
+- Scan your Bitwarden entries for API keys in password, notes, or custom fields
+- Extract domain information from URLs to create standardized names
+- Generate Chezmoi templates for each API key
+- Create a master configuration template
+
+### 4. Using in Chezmoi Templates
 
 Create templates that retrieve secrets from Bitwarden:
 ```bash
@@ -65,13 +82,23 @@ Create templates that retrieve secrets from Bitwarden:
 api_key = "{{ $key }}"
 ```
 
-### 4. Helper Scripts
+### 5. Demo Setup
+
+Run the demo to see how the system works:
+```bash
+./demo-setup.sh
+```
+
+## Helper Scripts
 
 The project includes several helper scripts:
 
-- `bw-helper`: Wrapper for Bitwarden commands with session management
-- `bw-template`: Template function for getting specific fields from Bitwarden items
-- `setup_bitwarden_chezmoi.sh`: Setup script for initial configuration
+- `scripts/bw-helper`: Wrapper for Bitwarden commands with session management
+- `scripts/bw-template`: Template function for getting specific fields from Bitwarden items
+- `scripts/setup_bitwarden_chezmoi.sh`: Setup script for initial configuration
+- `tools/bw-scan-api-keys.sh`: Scan Bitwarden entries for API keys
+- `tools/organize-bw-items.sh`: Organize Bitwarden entries and generate Chezmoi templates
+- `demo-setup.sh`: Demo script to show the system in action
 
 ## Configuration
 
@@ -94,14 +121,14 @@ Create a template file `example-config.tmpl` in your chezmoi directory:
 ```toml
 # Example configuration with Bitwarden secrets
 [api_keys]
-# openai = "{{ .Bitwarden "OpenAI API Key" "password" }}"
-# anthropic = "{{ .Bitwarden "Anthropic API Key" "password" }}"
+# openai = "{{ .Bitwarden \"OpenAI API Key\" \"password\" }}"
+# anthropic = "{{ .Bitwarden \"Anthropic API Key\" \"password\" }}"
 
 # Using the template function:
-{{- $openai_key := (bitwarden "OpenAI API Key") -}}
+{{- $openai_key := (bitwarden \"OpenAI API Key\") -}}
 openai_key = "{{ $openai_key }}"
 
-{{- $anthropic_key := (bitwarden "Anthropic API Key") -}}
+{{- $anthropic_key := (bitwarden \"Anthropic API Key\") -}}
 anthropic_key = "{{ $anthropic_key }}"
 ```
 
@@ -125,3 +152,12 @@ If you encounter issues:
 2. Check that you're logged in to Bitwarden
 3. Ensure the BW_SESSION environment variable is set
 4. Verify file permissions on helper scripts
+
+## Running the Demo
+
+To see a complete example of how the system works:
+
+1. Set up some example API keys in Bitwarden with names like "OpenAI API Key"
+2. Run: `./demo-setup.sh`
+3. Follow the instructions to initialize Chezmoi with the demo templates
+4. The demo will show how API keys from Bitwarden are integrated into your configurations
